@@ -2,6 +2,5 @@ image: python:3.6
 
 test:
   script:
-  # this configures Django application to use attached postgres database that is run on `postgres` host
-  - pip -r requirements.txt
+  - pip install -r requirements.txt
   - bash selftest
