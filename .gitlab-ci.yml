@@ -1,7 +1,7 @@
-before_script:
-  - docker info
-
-build_image:
+test:
   script:
-    - docker build -t my-docker-image .
-    - docker run my-docker-image /script/to/run/tests
+  # this configures Django application to use attached postgres database that is run on `postgres` host
+  - apt-get update -qy
+  - apt-get install -y python-dev python3-pip
+  - pip install -r requirements.txt
+  - bash selftest
