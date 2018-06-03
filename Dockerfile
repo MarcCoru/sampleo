@@ -8,8 +8,10 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 
-COPY ./ /sampleo/
+COPY requirements.txt /tmp/
+RUN pip install --requirement /tmp/requirements.txt
 
+COPY ./ /sampleo/
 WORKDIR "/sampleo"
 
 # CMD ["/bin/bash"]
