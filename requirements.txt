@@ -1,6 +1,5 @@
-numpy
-jupyter
 utm
 geopandas
 psycopg2-binary
 shapely
+argparse
