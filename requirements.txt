@@ -3,3 +3,4 @@ geopandas
 psycopg2-binary
 shapely
 argparse
+requests

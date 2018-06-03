@@ -1,7 +1,55 @@
 from shapely import geometry
+import shapely.wkt
 import utm
+import geopandas as gpd
+import os
+import psycopg2
+import requests
 
-def create_tile(lat,lon, tilesize=240, decimal=2):
+def read_postgres_credentials():
+
+    host=os.environ["PG_HOST"]
+    port=os.environ["PG_PORT"]
+    user=os.environ["PG_USER"]
+    database=os.environ["PG_DATABASE"]
+    password = os.environ["PG_PASS"]
+
+    return host, port, user, database, password
+
+def get_wms_credentials():
+    host = os.environ["WMS_HOST"]
+    user = os.environ["WMS_USER"]
+    password = os.environ["WMS_PASS"]
+
+    return host, user, password
+
+def connect_postgres(credentials):
+
+    host, port, user, database, password = credentials
+
+    conn = psycopg2.connect(
+        host=host,
+        dbname=database,
+        port=port,
+        user=user,
+        password=password)
+
+    return conn
+
+def query_random_point(
+        sql="from aois where layer='bavaria' and partition='train'",
+        conn=None):
+
+    if conn is None:
+        credentials = read_postgres_credentials()
+        conn = connect_postgres(credentials)
+
+    sql="select st_transform((st_dump(ST_GeneratePoints(geom, 1))).geom,4326) as geom {}".format(sql)
+    geom = gpd.GeoDataFrame.from_postgis(sql, conn, geom_col='geom').iloc[0].geom
+
+    return geom.x, geom.y
+
+def create_tile(lat, lon, tilesize=240, decimal=-2):
     """
     gets center point of tile in wgs84 latitude and longitude
     returns rectangular tile projected to nearest UTM strip
@@ -26,13 +74,121 @@ def create_tile(lat,lon, tilesize=240, decimal=2):
     easting = int(round(easting,decimal))
     northing = int(round(northing,decimal))
 
+    print()
+
     buffer=tilesize/2
     minx, maxx, miny, maxy = rectangular_buffer(easting,northing,buffer)
 
     pts = [(minx,miny),(minx,maxy),(maxx,maxy),(maxx,miny),(minx,miny)]
 
-    pts_wgs = [utm.to_latlon(x,y, utm_zone, utm_row) for x,y in pts]
+    #pts_wgs = [utm.to_latlon(x,y, utm_zone, utm_row) for x,y in pts]
 
-    geom = geometry.Polygon(pts_wgs)
+    geom = geometry.Polygon(pts)
 
     return geom.wkt, utm_zone, utm_row
+
+def query_tile(
+        sql="from aois where layer='bavaria' and partition='train'",
+        conn=None):
+
+    lon,lat = query_random_point(
+            sql="from aois where layer='bavaria' and partition='train'",
+            conn=None)
+
+    wkt, zone, row = create_tile(lat,lon)
+
+    return wkt, zone, row
+
+
+def utmzone2epsg(zone, row):
+
+    def epsgformat(code):
+        return "EPSG:{}".format(code)
+
+    if row in "CDEFGHJKLM": # southern hemisphere
+        return epsgformat('326'+str(zone)) # epsg:32701 to epsg:32760
+    elif row in "NPQRSTUVWXX": # northern hemisphere
+        return epsgformat('326'+str(zone)) # epsg:32601 to epsg:32660
+    else:
+        raise ValueError("row letter {} not handled correctly".format(row))
+
+def latlonwkt_to_utmwkt(latlonwkt):
+    """
+    converts wkt from latlon coordinates to nearest utm coordinates
+    """
+
+    # create geometry
+    geom = shapely.wkt.loads(latlonwkt)
+
+    # latlon -> utm
+    east_north=list()
+    for lon, lat in geom.exterior.coords:
+        e,n,zone,row = utm.from_latlon(lat,lon)
+        east_north.append((e,n))
+
+    # create geometry and return wkt in utm
+    return shapely.geometry.Polygon(east_north).wkt, zone, row
+
+def wkt_to_bbox(wkt):
+    bbox = shapely.wkt.loads(wkt).bounds
+    return ",".join(str(el) for el in bbox)
+
+
+def build_wms_url(
+        wkt,
+        zone,
+        row,
+        host,
+        layers="mula18:bavaria2016",
+        workspace="mula18",
+        styles="",
+        height=240,
+        width=240,
+        format="image/geotiff"):
+
+    #utm_wkt, zone, row = latlonwkt_to_utmwkt(wkt)
+    bbox = wkt_to_bbox(wkt)
+    srs = utmzone2epsg(zone,row)
+
+    host, user, password = get_wms_credentials()
+
+    query="""
+        http://{host}:8080/geoserver/{workspace}/
+        wms?service=WMS&
+        version=1.1.0&
+        request=GetMap&
+        layers={layers}&
+        styles={styles}&
+        bbox={bbox}&
+        width={width}&
+        height={height}&
+        srs={srs}&
+        format={format}
+        """.format(
+        host=host,
+        workspace=workspace,
+        layers=layers,
+        styles=styles,
+        bbox=bbox,
+        width=width,
+        height=height,
+        srs=srs,
+        format=format)
+
+    return query.replace("\n","").replace(" ","") # clean up
+    #http://knecht:8080/geoserver/mula18/wms?service=WMS&version=1.1.0&request=GetMap&layers=mula18:bavaria2016&styles=&bbox=4282923.0,5237524.0,4636731.5,5604831.5&width=739&height=768&srs=EPSG:31468&format=image%2Fgeotiff8
+
+def query_label(outfile):
+    wkt, zone, row = query_tile()
+
+    host, user, password = get_wms_credentials()
+
+    request = build_wms_url(wkt, zone, row , host=host)
+
+    with open(outfile, 'wb') as f:
+
+        ret = requests.get(request,
+                           stream=True,
+                           auth=requests.auth.HTTPBasicAuth(user, password))
+        for data in ret.iter_content(1024):
+            f.write(data)

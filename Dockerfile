@@ -15,4 +15,4 @@ COPY ./ /sampleo/
 WORKDIR "/sampleo"
 
 # CMD ["/bin/bash"]
-ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT ["/bin/bash"]
