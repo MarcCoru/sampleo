@@ -1,28 +1,34 @@
 # Sampleo
 
-A dockerized module to sample raster label pairs for Earth Observation data
+A dockerized module to sample raster-label pairs for Earth Observation data
 
 <img src="doc/node_diagram.png">
 
 ## Usage
 
-run tests
+build docker
 ```
-docker run --env-file=credentials.env sampleo selftest"
-```
-
-sample random tile (tbd)
-```
-docker run --env-file=credentials.env sampleo random "from aoi where name='bavaria'"
+bash build_docker.sh
 ```
 
-run self test
+main script:
 ```
-docker run samplEO test
+docker run --env-file credentials.env sampleo \
+  bash get.sh
 ```
 
-requires following envirnment variables to be set on local machine
+run tests from the docker image
 ```
-PG_HOST, PG_PORT, PG_USER, PG_DATABASE, PG_PASS
+docker run --env-file credentials.env sampleo \
+  bash selftest.sh
 ```
-or provided as environment file `credentials.env` to the docker container
+
+**important**: these scripts require the environment variables `PG_HOST`, `PG_PORT`,`PG_USER`, `PG_DATABASE`, `PG_PASS` to be set for the PostgreSQL/Postgis connection.
+And `WMS_HOST`, `WMS_USER` and `WMS_PASS` to be set for the WMS label query.
+These environment variables can be passed via `--env-file credentials.env` to the docker image.
+
+query a tile randomly from the area of interest
+```
+docker run --env-file credentials.env sampleo \
+  python get_tile.py --sql "from aois where layer='brazil and partition='eval'"
+```

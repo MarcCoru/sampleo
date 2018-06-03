@@ -5,6 +5,7 @@ if parentPath not in sys.path:
 
 import geotools
 import unittest
+import utm
 
 class TestGeotools(unittest.TestCase):
 
@@ -12,7 +13,11 @@ class TestGeotools(unittest.TestCase):
 
         lat, lon = (47.777922478833936, 12.111875292345331)
 
-        wkt, zone, row = geotools.create_tile(lat, lon)
+        easting, northing, zone, row = utm.from_latlon(lat,lon)
+
+        easting, northing = geotools.discretize(easting,northing,decimal=-2)
+
+        wkt = geotools.create_tile(easting, northing, tilesize=240)
 
         wkt_ref = 'POLYGON ((283480 5295580, 283480 5295820, 283720 5295820, 283720 5295580, 283480 5295580))'
 
@@ -36,14 +41,14 @@ class TestGeotools(unittest.TestCase):
         except:
             self.fail("could not retrieve WMS credentials. This requires environment variables 'WMS_HOST', 'WMS_USER' and 'WMS_PASS' to be set")
 
-    def test_query_tile(self):
-
-        sql = "from aois where layer='bavaria' and partition='train'"
-
-        try:
-            wkt = geotools.query_tile("from aois where layer='bavaria' and partition='train'")
-        except:
-            self.fail("could not query random tile with sql: {}".format(sql))
+    # def test_query_tile(self):
+    #
+    #     sql = "from aois where layer='bavaria' and partition='train'"
+    #
+    #     try:
+    #         wkt, zone, row, name = geotools.query_tile("from aois where layer='bavaria' and partition='train'")
+    #     except:
+    #         self.fail("could not query random tile with sql: {}".format(sql))
 
     def test_wkt(self):
         import shapely.wkt

@@ -1,4 +1,5 @@
-
+tmp
+data
 *.aux.xml
 # environment file for passwords
 credentials.env
