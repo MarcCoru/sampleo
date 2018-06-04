@@ -25,12 +25,21 @@ class TestGeotools(unittest.TestCase):
         self.assertTrue(zone==33)
         self.assertTrue(row=='T')
 
+    def test_rectangular_buffer(self):
+
+        minx, maxx, miny, maxy = geotools.rectangular_buffer(0,0, 1)
+
+        self.assertTrue(minx==-1)
+        self.assertTrue(miny==-1)
+        self.assertTrue(maxx==1)
+        self.assertTrue(maxy==1)
+
     def test_query_random_point(self):
 
         sql = "from aois where layer='bavaria' and partition='train'"
 
         try:
-            x,y = geotools.query_random_point("from aois where layer='bavaria' and partition='train'")
+            geotools.query_random_point("from aois where layer='bavaria' and partition='train'")
         except:
             self.fail("could not query random point with sql: {}".format(sql))
 
@@ -56,7 +65,7 @@ class TestGeotools(unittest.TestCase):
         try:
             wkt="POLYGON ((49.17222000889514 49.17172099789813, 49.17437779130425 49.17164150531155, 49.17442986628672 49.17493260845946, 49.17227207993952 49.17501195815076, 49.17222000889514 49.17172099789813))"
 
-            geom = shapely.wkt.loads(wkt)
+            shapely.wkt.loads(wkt)
         except:
             self.fail("")
 
@@ -96,6 +105,26 @@ class TestGeotools(unittest.TestCase):
         ref_epsg = 'EPSG:32639'
 
         self.assertTrue(epsg==ref_epsg)
+
+
+    def test_bounds_bounds_to_utm(self):
+        
+        minlon=8.936117736731113
+        maxlon=13.928324974888927
+        minlat=47.240412610307
+        maxlat=50.56321539603782
+
+        ext = geotools.bounds_to_utm(minlat,minlon,maxlat,maxlon)
+
+        minx, miny, maxx, maxy, zone, row = ext
+
+        self.assertEqual(minx, 495165.14233676565)
+        self.assertEqual(miny, 5231882.834194369)
+        self.assertEqual(maxx, 848972.1925248313)
+        self.assertEqual(maxy, 5612859.060998418)
+        self.assertEqual(zone, 32)
+        self.assertEqual(row, 'U')
+        
 
     def test_wkt_to_bbox(self):
         wkt = 'POLYGON ((366739.9790677647 5448209.999917955, 366739.9790695914 5448449.999918112, 366979.9791826151 5448449.999919109, 366979.9791807987 5448209.99991895, 366739.9790677647 5448209.999917955))'

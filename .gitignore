@@ -1,6 +1,9 @@
+.noseids
+.vscode
 tmp
 data
 *.aux.xml
+.idea
 # environment file for passwords
 credentials.env
 *.ipynb

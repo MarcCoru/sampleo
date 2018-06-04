@@ -60,24 +60,24 @@ def discretize(easting,northing,decimal=-2):
     northing = int(round(northing,decimal))
     return easting, northing
 
+def rectangular_buffer(centerx, centery, buffer):
+    """
+    returns a wkb_hex representation of a box around a rectangular buffered center point
+    """
+
+    minx = centerx - buffer
+    maxx = centerx + buffer
+    miny = centery - buffer
+    maxy = centery + buffer
+
+    return minx, maxx, miny, maxy
+
 def create_tile(easting, northing, tilesize):
     """
     gets center point of tile
     returns rectangular tile projected to nearest UTM strip
     discretized to nearest utm grid (defined by decimal rounding)
     """
-
-    def rectangular_buffer(centerx, centery, buffer):
-        """
-        returns a wkb_hex representation of a box around a rectangular buffered center point
-        """
-
-        minx = centerx - buffer
-        maxx = centerx + buffer
-        miny = centery - buffer
-        maxy = centery + buffer
-
-        return minx, maxx, miny, maxy
 
     buffer=tilesize/2
     minx, maxx, miny, maxy = rectangular_buffer(easting,northing,buffer)
@@ -102,6 +102,26 @@ def utmzone2epsg(zone, row):
     else:
         raise ValueError("row letter {} not handled correctly".format(row))
 
+
+def bounds_to_utm(minlat,minlon,maxlat,maxlon):
+    """
+    takes wgs85
+    
+    determines the appropiate utm zone and row by the center of points min and max
+    projects min and max coordinates to utm and ouputs zone and row
+    """
+    
+    centerlat = (minlat+maxlat)/2
+    centerlon = (minlon+maxlon)/2
+    
+    # get center zone and row numbers
+    _,_,zone,row = utm.from_latlon(centerlat, centerlon)
+    
+    # convert min and max
+    minx, miny, zone1, row1 = utm.from_latlon(minlat, minlon, force_zone_number=zone)
+    maxx, maxy, zone2, row2 = utm.from_latlon(maxlat, maxlon, force_zone_number=zone)
+        
+    return minx, miny, maxx, maxy, zone, row
 
 def utm2wgs(geom, zone, row):
     pts=list()

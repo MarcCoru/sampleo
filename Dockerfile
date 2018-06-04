@@ -8,6 +8,10 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 
+# install rclone for cloud storage stuff
+#RUN curl https://rclone.org/install.sh >> install.sh
+#RUN bash install.sh
+
 COPY requirements.txt /tmp/
 RUN pip install --requirement /tmp/requirements.txt
 
