@@ -17,7 +17,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--sql', type=str,
-                        default="from aois where layer='bavaria' and partition='train'",
+                        default="from grid where origin='bavaria' and train=true",
                         help="sql from and where clause to define region in which the tile is sampled. Defaults to: from aois where layer='bavaria' and partition='train'")
     parser.add_argument('--tilesize', type=int,
                         default=240,
@@ -41,7 +41,7 @@ def get_tile(sql, tilesize, decimal=-2, conn=None):
             st_transform(
                 (
                     st_dump(
-                        ST_GeneratePoints(geom, 1))
+                        RandomPointsInPolygon(st_union(geom), 1))
                 ).geom,
                 4326) as geom
                 {from_where_clause}

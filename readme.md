@@ -27,6 +27,10 @@ docker run --env-file credentials.env sampleo \
 And `WMS_HOST`, `WMS_USER` and `WMS_PASS` to be set for the WMS label query.
 These environment variables can be passed via `--env-file credentials.env` to the docker image.
 
+Requires the `RandomPointsInPolygon.sql` SQL function.
+The code is stored in `./sql`. 
+It needs to be executed once on the PostGIS server to register the function.
+
 query a tile randomly from the area of interest
 ```
 docker run --env-file credentials.env sampleo \

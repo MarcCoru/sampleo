@@ -20,7 +20,7 @@ class TestPostgres(unittest.TestCase):
             self.fail("could not read postgres credentials")
 
         try:
-            conn = connect_postgres(credentials)
+            connect_postgres(credentials)
         except:
             self.fail("could not connect to database")
 
