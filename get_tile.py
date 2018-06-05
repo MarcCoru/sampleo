@@ -47,10 +47,10 @@ def get_tile(sql, tilesize, decimal=-2, conn=None):
                 {from_where_clause}
             """.format(from_where_clause=sql)
 
-    try:
-        geom = gpd.GeoDataFrame.from_postgis(sql_query, conn, geom_col='geom').iloc[0].geom
-    except:
-        raise ValueError("Dataset query not successfull! full sql query: {}".format(sql_query))
+    #try:
+    geom = gpd.GeoDataFrame.from_postgis(sql_query, conn, geom_col='geom').iloc[0].geom
+    #except:
+    #    raise ValueError("Dataset query not successfull! full sql query: {}".format(sql_query))
 
     lon, lat = (geom.x, geom.y)
 
