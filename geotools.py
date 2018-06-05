@@ -50,7 +50,7 @@ def query_random_point(
     return geom.x, geom.y
 
 def format_name(e,n,zone,row):
-    return "E{e}N{n}{zone}{row}".format(e=e,n=n,zone=zone,row=row)
+    return "E{e}N{n}UTM{zone}{row}".format(e=e,n=n,zone=zone,row=row)
 
 def discretize(easting,northing,decimal=-2):
     """

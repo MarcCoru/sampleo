@@ -59,15 +59,16 @@ class TestGeotools(unittest.TestCase):
     #     except:
     #         self.fail("could not query random tile with sql: {}".format(sql))
 
-    def test_wkt(self):
-        import shapely.wkt
+    def test_format_name(self):
+        easting=557000
+        northing=5569100
+        zone=32
+        row='U'
+        name = geotools.format_name(easting, northing, zone, row)
 
-        try:
-            wkt="POLYGON ((49.17222000889514 49.17172099789813, 49.17437779130425 49.17164150531155, 49.17442986628672 49.17493260845946, 49.17227207993952 49.17501195815076, 49.17222000889514 49.17172099789813))"
+        ref_name='E557000N5569100UTM32U'
+        self.assertEqual(ref_name,name)
 
-            shapely.wkt.loads(wkt)
-        except:
-            self.fail("")
 
     # def test_latlonwkt_to_utmwkt(self):
     #     latlonwkt="POLYGON ((49.17222000889514 49.17172099789813, 49.17437779130425 49.17164150531155, 49.17442986628672 49.17493260845946, 49.17227207993952 49.17501195815076, 49.17222000889514 49.17172099789813))"
