@@ -6,6 +6,7 @@ A dockerized module to sample raster-label pairs for Earth Observation data
 
 **important**: these scripts require the environment variables `PG_HOST`, `PG_PORT`,`PG_USER`, `PG_DATABASE`, `PG_PASS` to be set for the PostgreSQL/Postgis connection.
 And `WMS_HOST`, `WMS_USER` and `WMS_PASS` to be set for the WMS label query.
+Connection to the Google Project requires `GOOGLE_PROJECT_ID` to be set and `auth/google-service-account-key.json` to be generated and located in `auth`
 These environment variables can be passed via `--env-file credentials.env` to the docker image.
 
 ## Docker
@@ -17,7 +18,7 @@ bash build_docker.sh
 
 main script:
 ```
-docker run --env-file credentials.env sampleo \
+docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo \
   bash get.sh
 ```
 
@@ -92,4 +93,11 @@ python create_grid.py \
 `query.sql` can be executed via `psql`
 ```bash
 psql -d $PG_DATABASE -U $PG_USER -h $PG_HOST -p $PG_PORT -f query.sql
+```
+
+## Quicktests
+
+check google connectivity
+```
+docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash google_init.sh
 ```
