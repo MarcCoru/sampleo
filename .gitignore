@@ -1,3 +1,4 @@
+*.save
 .noseids
 .vscode
 tmp
