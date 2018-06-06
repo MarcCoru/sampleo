@@ -5,3 +5,5 @@ shapely
 argparse
 requests
 geojson
+earthengine-api
+oauth2client

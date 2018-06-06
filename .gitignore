@@ -7,6 +7,7 @@ data
 # environment file for passwords
 credentials.env
 *.ipynb
+auth
 
 # Created by https://www.gitignore.io/api/python,jupyternotebook
 

@@ -47,7 +47,10 @@ def get_tile(sql, tilesize, decimal=-2, conn=None):
                 {from_where_clause}
             """.format(from_where_clause=sql)
 
+    #try:
     geom = gpd.GeoDataFrame.from_postgis(sql_query, conn, geom_col='geom').iloc[0].geom
+    #except:
+    #    raise ValueError("Dataset query not successfull! full sql query: {}".format(sql_query))
 
     lon, lat = (geom.x, geom.y)
 
@@ -77,6 +80,10 @@ if __name__ == '__main__':
     # create feature object and feature collection
     feat = geojson.Feature(geometry=geom)
     collection=geojson.FeatureCollection([feat])
+
+    # create folder if not exists
+    if not os.path.exists(args.outfolder):
+        os.makedirs(args.outfolder)
 
     # write geojson file
     outpath=os.path.join(args.outfolder, name+".geojson")
