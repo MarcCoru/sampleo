@@ -28,6 +28,14 @@ parser.add_argument('geojson', type=str,
 parser.add_argument('--outfolder', type=str,
                     default="data",
                     help="folder to store tif images")
+parser.add_argument('-l','--layers',type=str, default="mula18:fields", help="WMS layer")
+
+layers="mula18:fields"
+workspace="mula18"
+height=240
+width=240
+styles=""
+format="image/geotiff"
 
 args = parser.parse_args()
 
@@ -53,7 +61,18 @@ geom, zone, row = geotools.wgs2utm(geom)
 
 # prepare wms request
 host, user, password = geotools.get_wms_credentials()
-request = geotools.build_wms_url(geom.wkt, zone, row, host=host)
+
+request = geotools.build_wms_url(
+        geom.wkt,
+        zone,
+        row,
+        host,
+        layers,
+        workspace,
+        height,
+        width,
+        styles,
+        format)
 
 outpath=os.path.join(args.outfolder,name+".tif")
 
