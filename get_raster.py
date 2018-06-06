@@ -10,24 +10,8 @@ import shapely.geometry
 import ee
 import time
 
-#ee.ServiceAccountCredentials('docker@sampleo-206319.iam.gserviceaccount.com','/auth/google-service-account-key.json')
-
 ee.Initialize()
-
-def addname(img):
-    return img.set({name: ee.String(img.date().getRelative('day', 'year').add(1)) })
-
-def exportImage(img):
-    name = image.properties.name
-    id = image.id
-    
-    image = ee.Image(image.id)
-
-    ee.batch.Export.image.toDrive(image = image, description=name, folder=args.outfolder, 
-                                  scale = 10, fileFormat= 'TFRecord', region = tile, 
-                                  formatOptions = {'patchDimensions': [24, 24], 
-                                  'collapseBands': false, 'compressed': true})
-                                 
+                        
 """
 queries a postgres database for a random tile within an area of interest (aoi)
 and returns a representation
@@ -45,9 +29,6 @@ parser = argparse.ArgumentParser(description=description)
 parser.add_argument('geojson', type=str,
                     default="jsonfile defining geojson location",
                     help="")
-parser.add_argument('--outfolder', type=str,
-                    default="data",
-                    help="folder to store tif images")
 
 args = parser.parse_args()
 
@@ -98,11 +79,16 @@ for index in range(0, _size-1):
                                  
     task = 'image' + str(index)
     
-    task = ee.batch.Export.image.toCloudStorage(
-        image = img,
-        bucket='gs://sampleo/',
-        fileNamePrefix= 'S2_TOA_' + str(doy)
-    )
+#    task = ee.batch.Export.image.toCloudStorage(
+#        image = img,
+#        bucket='gs://sampleo/',
+#        fileNamePrefix= 'S2_TOA_' + str(doy)
+#    )
+    
+    task = ee.batch.Export.image.toCloudStorage(image = img, description='S2_TOA_' + str(doy), 
+                                  scale = 10, fileFormat= 'TFRecord', region = geom, bucket='gs://sampleo/',
+                                  formatOptions = {'patchDimensions': [24, 24], 
+                                  'collapseBands': False, 'compressed': True})
 
     task.start() 
     time.sleep(1)
