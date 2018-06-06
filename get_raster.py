@@ -10,6 +10,9 @@ import shapely.geometry
 import ee
 import time
 
+#credentials = ee.ServiceAccountCredentials('docker@sampleo-206319.iam.gserviceaccount.com','/auth/google-service-account-key.json')
+#ee.Initialize(credentials)
+
 ee.Initialize()
                         
 """
@@ -80,7 +83,7 @@ for index in range(0, _size-1):
     task = 'image' + str(index)
     
     task = ee.batch.Export.image.toCloudStorage(image = img, description=name + "_" + str(doy), 
-                                  scale = 10, fileFormat= 'TFRecord', region = geom.getInfo()['coordinates'], bucket='gs://sampleo/',
+                                  scale = 10, fileFormat= 'TFRecord', region = geom.getInfo()['coordinates'], bucket='sampleo',
                                   formatOptions = {'patchDimensions': [24, 24]})
 
     task.start() 
