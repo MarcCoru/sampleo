@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # init google project connection
-bash google_init.sh
+bash google_init.sh /auth/google-service-account-key.json
 
 # data store
 bucket=gs://sampleo/
