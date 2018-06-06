@@ -1,0 +1,27 @@
+labelid,label,color
+0,unknown,#000000
+1,sugar beet,#FFFF00
+2,summer oat,#1CE6FF
+3,meadow,#FF34FF
+4,farm,#FF4A46
+5,rape,#008941
+7,scrub,#006FA6
+8,hop,#A30059
+9,winter spelt,#FFDBE5
+10,water,#7A4900
+11,industrial,#0000A6
+12,winter triticale,#63FFAC
+13,beans,#B79762
+14,commercial,#004D43
+15,peas,#8FB0FF
+16,potatoe,#997D87
+17,soybeans,#5A0007
+18,park,#809693
+19,asparagus,#FEFFE6
+20,residential,#1B4400
+21,forest,#4FC601
+22,winter wheat,#3B5DFF
+23,winter barley,#4A3B53
+24,winter rye,#FF2F80
+25,summer barley,#61615A
+26,maize,#BA0900

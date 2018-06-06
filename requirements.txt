@@ -7,3 +7,6 @@ requests
 geojson
 earthengine-api
 oauth2client
+tensorflow
+Pillow
+numpy

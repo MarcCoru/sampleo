@@ -1,5 +1,5 @@
 auth
-credentials.env
 tmp
+credentials.env
 .ipynb_checkpoints
 __pycache__

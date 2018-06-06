@@ -167,11 +167,11 @@ def build_wms_url(
         zone,
         row,
         host,
-        layers="mula18:bavaria2016",
-        workspace="mula18",
+        layers,
+        workspace,
+        height,
+        width,
         styles="",
-        height=240,
-        width=240,
         format="image/geotiff"):
 
     #utm_wkt, zone, row = latlonwkt_to_utmwkt(wkt)

@@ -95,9 +95,18 @@ python create_grid.py \
 psql -d $PG_DATABASE -U $PG_USER -h $PG_HOST -p $PG_PORT -f query.sql
 ```
 
+### Convert Tif to Tfrecord
+
+```
+python tif2tfrecord.py <tiffolder> <target>.tfrecord
+```
+
+raster images are organized in `<tiffolder>/x/*.tif` and label image(s) in `<tiffolder>/y/*.tif`.
+the output `<target>` will be `gzipped` if it ends with `.gz` 
+
 ## Quicktests
 
 check google connectivity
 ```
-docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash google_init.sh
+docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash google_init.sh /auth/google-service-account-key.json
 ```
