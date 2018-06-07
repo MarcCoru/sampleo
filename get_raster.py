@@ -67,87 +67,96 @@ print(name + ' tile contains: ' + str(collection.size().getInfo()) + ' S2TOA ima
 ### source: https://groups.google.com/forum/#!searchin/google-earth-engine-developers/imagecollection|sort:date/google-earth-engine-developers/XP_gsnwI8cI/-N1CVryYCwAJ
 ### https://groups.google.com/forum/#!searchin/google-earth-engine-developers/distinct$20python%7Csort:date/google-earth-engine-developers/F34-_mIksZo/FhH9Nv0VCgAJ
 ### create export tasks
-images = collection.limit(2)
-images = collection
-
-_size = images.size().getInfo()
-
-img = images.distinct('system:time_start')
-        
-img_list = img.toList(img.size(), 0)
-
-folder = "raster_240_bydate"
-
-for index in range(0, _size-1):
-
-    img = ee.Image(img_list.get(int(index)))
-
-#    doy = ee.String(img.date().getRelative('day', 'year').add(1)).getInfo()                                  
-#    print(doy)
-                          
-    date = ee.String(img.date().format('YYYY-MM-dd')).getInfo()
-    
-    task = 'image' + str(index)
-    
-    task = ee.batch.Export.image.toCloudStorage(image = img, description=name + "_" + str(date), 
-                                                fileNamePrefix= folder + '/' + name + "_" + str(date),
-                                  scale = 10, fileFormat= 'TFRecord', region = geom.getInfo()['coordinates'], bucket='sampleo',
-                                  formatOptions = {'patchDimensions': [24, 24], 
-                                  'collapseBands': False, 'compressed': True})
-
-    task.start() 
-    print('Done.', task.status())
-
-    time.sleep(1)
-
-    state=task.status()['state'] 
-    while state in ['READY', 'RUNNING']:
-        print(state + '...')
-        state = task.status()['state']
-#        time.sleep(1)
-    print('Done.', task.status())
+#images = collection.limit(2)
+#images = collection
 #
+#_size = images.size().getInfo()
+#
+#img = images.distinct('system:time_start')
+#        
+#img_list = img.toList(img.size(), 0)
+#
+#folder = "raster_240_bydate"
+#
+#for index in range(0, _size-1):
+#
+#    img = ee.Image(img_list.get(int(index)))
+#
+#    date = ee.String(img.date().getRelative('day', 'year').add(1)).getInfo()                                  
+##    print(doy)
+#                          
+##   date = ee.String(img.date().format('YYYY-MM-dd')).getInfo()
+#    
+#    task = 'image' + str(index)
+#    
+#    task = ee.batch.Export.image.toCloudStorage(image = img, description=name + "_" + str(date), 
+#                                                fileNamePrefix= folder + '/' + name + "_" + str(date),
+#                                  scale = 10, fileFormat= 'TFRecord', region = geom.getInfo()['coordinates'], bucket='sampleo',
+#                                  formatOptions = {'patchDimensions': [24, 24], 
+#                                  'collapseBands': False, 'compressed': True})
+#
+#    task.start() 
+#    print('Done.', task.status())
+#
+#    time.sleep(1)
+#
+#    state=task.status()['state'] 
+#    while state in ['READY', 'RUNNING']:
+#        print(state + '...')
+#        state = task.status()['state']
+##        time.sleep(1)
+#    print('Done.', task.status())
+##
 ## approach 2: export TFrecords using neighborhoodToArray - return all NOBS by band (faster)
-#def kernelnb(img):
-#    return img.neighborhoodToArray(kernel_10m).sampleRegions(collection= tile_point)
-#
-##tile_point = ee.Feature(ee.Geometry.Point(geom.centroid().coordinates()))
-#tile_point = ee.Feature(ee.Geometry.Point(pt_list[4]))
-#
-##size = 24
-##weights = ee.List.repeat(ee.List.repeat(1, size), size)
-##kernel_10m = ee.Kernel.fixed(size, size, weights)
-####Sample pixels in the ImageCollection at these random points
-##values_10m = collection.map(kernelnb).flatten()
-##        
-##print(values_10m)
-#
-###create kernel
-##kernel_10m = ee.Kernel.square(11) #square kernell
+def kernelnb(img):
+    return img.neighborhoodToArray(kernel_10m).sampleRegions(collection= tile_point)
+
+def adddata(img):
+    ## Get the date, convert to integer
+    year = ee.Image.constant(img.date().get('year').add(0))
+    day = ee.Image.constant(img.date().getRelative('day', 'year').add(1))
+    img = img.addBands(day.rename('DOY').int()).addBands(year.rename('year').int()) 
+    return img
+
+collection = collection.map(adddata)
+    
+#tile_point = ee.Feature(ee.Geometry.Point(geom.centroid().coordinates()))
+tile_point = ee.Feature(ee.Geometry.Point(pt_list[3]))
+
 #size = 24
 #weights = ee.List.repeat(ee.List.repeat(1, size), size)
 #kernel_10m = ee.Kernel.fixed(size, size, weights)
-#
 ###Sample pixels in the ImageCollection at these random points
 #values_10m = collection.map(kernelnb).flatten()
-##print(values_10m.size().getInfo())
-#
-#folder = "raster_240_all_kernelfixed"
-#
-#task= ee.batch.Export.table.toCloudStorage(
-#        collection= values_10m,
-#        description= name,
-#        folder= None,
-#        fileNamePrefix= folder + '/' + name + 'v4',
-#        fileFormat= 'TFRecord',
-#        bucket='sampleo')
 #        
-#try:
-#    task.start()
-#    #TODO: Implement log dump instead of print
-#    print("Processing year: ", folder,' and tile: ', name)
-#    time.sleep(15)
-#    print(task.status())
-#except Exception as str_error:
-#    print("Error in year: ", folder,' and tile: ', name)
-#    print("Error type equal to ", str_error)
+#print(values_10m)
+
+##create kernel
+#kernel_10m = ee.Kernel.square(11) #square kernell
+size = 24
+weights = ee.List.repeat(ee.List.repeat(1, size), size)
+kernel_10m = ee.Kernel.fixed(size, size, weights)
+
+##Sample pixels in the ImageCollection at these random points
+values_10m = collection.map(kernelnb).flatten()
+#print(values_10m.size().getInfo())
+
+folder = "raster_240_all_kernelfixed"
+
+task= ee.batch.Export.table.toCloudStorage(
+        collection= values_10m,
+        description= name,
+        folder= None,
+        fileNamePrefix= folder + '/' + name + 'v3',
+        fileFormat= 'TFRecord',
+        bucket='sampleo')
+        
+try:
+    task.start()
+    #TODO: Implement log dump instead of print
+    print("Processing year: ", folder,' and tile: ', name)
+    time.sleep(15)
+    print(task.status())
+except Exception as str_error:
+    print("Error in year: ", folder,' and tile: ', name)
+    print("Error type equal to ", str_error)
