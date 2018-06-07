@@ -11,6 +11,22 @@ import utm
 
 class TestSqltools(unittest.TestCase):
 
+    def test_query_landsat_row_path(self):
+
+        lat=48
+        lon=12
+
+        try:
+            path, row = sqltools.query_landsat_row_path(lat=lat, lon=lon)
+        except:
+            self.fail("Could not query path row from postgis server. is postgis connected? does the postgis database contain a wrs2_descending table with attributes geom, path and row?")
+        
+        path_ref=192
+        row_ref=27
+
+        self.assertEqual(path,path_ref)
+        self.assertEqual(row,row_ref)
+
     def test_build_sql_geom2grid(self):
 
         sql="from regions where name='bavaria'"

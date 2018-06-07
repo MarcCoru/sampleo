@@ -3,9 +3,35 @@ from geotools import rectangular_buffer
 import shapely
 import utm
 import geopandas as gpd
+import pandas as pd
 import geotools
 
+def query_landsat_row_path(lat,lon):
+    """
+    queries the postgis database table 'wrs2_descending' for 
+    acquisition row and column
+    """
 
+    credentials = geotools.read_postgres_credentials()
+    conn=geotools.connect_postgres(credentials)
+
+    sql="""
+        select path, row 
+        from wrs2_descending 
+        where 
+            st_within(
+                st_setsrid(
+                    ST_MakePoint({lon},{lat}),
+                    4326),
+                geom)
+        """.format(
+        lon=lon, 
+        lat=lat)
+
+    df = pd.read_sql(sql, conn)
+
+    return df.iloc[0]["path"], df.iloc[0]["row"]
+    
 
 def build_sql_geom2grid(sql, height, width, margin=0):
     """

@@ -89,11 +89,21 @@ for index in range(0, _size-1):
     
     task = 'image' + str(index)
     
-    task = ee.batch.Export.image.toCloudStorage(image = img, description=name + "_" + str(date), 
-                                                fileNamePrefix= folder + '/' + name + "_" + str(date),
-                                  scale = 10, fileFormat= 'TFRecord', region = geom.getInfo()['coordinates'], bucket='sampleo',
-                                  formatOptions = {'patchDimensions': [24, 24], 
-                                  'collapseBands': False, 'compressed': True})
+    task = ee.batch.Export.image.toCloudStorage(
+        image=img,
+        description='',
+        fileFormat='GeoTIFF',
+        bucket='sampleo',
+        fileNamePrefix=folder + '/' + name + "_" + str(date),
+        scale=10,
+        region=geom.getInfo()['coordinates']
+        )
+
+    # task = ee.batch.Export.image.toCloudStorage(image = img, description=name + "_" + str(date), 
+    #                                             fileNamePrefix= folder + '/' + name + "_" + str(date),
+    #                               scale = 10, fileFormat= 'TFRecord', region = geom.getInfo()['coordinates'], bucket='sampleo',
+    #                               formatOptions = {'patchDimensions': [24, 24], 
+    #                               'collapseBands': False, 'compressed': True})
 
     task.start() 
     print('Done.', task.status())

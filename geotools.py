@@ -5,6 +5,7 @@ import geopandas as gpd
 import os
 import psycopg2
 import requests
+import geojson
 
 def read_postgres_credentials():
 
@@ -118,8 +119,8 @@ def bounds_to_utm(minlat,minlon,maxlat,maxlon):
     _,_,zone,row = utm.from_latlon(centerlat, centerlon)
     
     # convert min and max
-    minx, miny, zone1, row1 = utm.from_latlon(minlat, minlon, force_zone_number=zone)
-    maxx, maxy, zone2, row2 = utm.from_latlon(maxlat, maxlon, force_zone_number=zone)
+    minx, miny, _, _ = utm.from_latlon(minlat, minlon, force_zone_number=zone)
+    maxx, maxy, _, _ = utm.from_latlon(maxlat, maxlon, force_zone_number=zone)
         
     return minx, miny, maxx, maxy, zone, row
 
@@ -171,14 +172,15 @@ def build_wms_url(
         workspace,
         height,
         width,
+        user="",
+        password="",
         styles="",
-        format="image/geotiff"):
+        img_format="image/geotiff"):
 
     #utm_wkt, zone, row = latlonwkt_to_utmwkt(wkt)
     bbox = wkt_to_bbox(wkt)
     srs = utmzone2epsg(zone,row)
 
-    host, user, password = get_wms_credentials()
 
     query="""
         http://{host}:8080/geoserver/{workspace}/
@@ -201,7 +203,75 @@ def build_wms_url(
         width=width,
         height=height,
         srs=srs,
-        format=format)
+        format=img_format)
 
     return query.replace("\n","").replace(" ","") # clean up
     #http://knecht:8080/geoserver/mula18/wms?service=WMS&version=1.1.0&request=GetMap&layers=mula18:bavaria2016&styles=&bbox=4282923.0,5237524.0,4636731.5,5604831.5&width=739&height=768&srs=EPSG:31468&format=image%2Fgeotiff8
+
+
+def load_geojson(geojson_file):
+
+    with open(geojson_file) as f:
+        gj = geojson.load(f)
+    pt_list = gj['features'][0]["geometry"]["coordinates"][0]
+
+    # convert point list (wgs) to shapely geometry object
+    return shapely.geometry.Polygon(pt_list)
+
+def build_wcs_url_landsat(host,datefrom,dateto, bbox, row, path, coverage):
+
+    #utm_wkt, zone, row = latlonwkt_to_utmwkt(wkt)
+    # bbox = wkt_to_bbox(wkt)
+    # srs = utmzone2epsg(zone,row)
+
+    minlat, minlon, maxlat, maxlon = bbox
+
+
+    query="""
+        http://{host}/wcs?
+        service=WCS&
+        Request=GetCoverage&
+        version=2.0.0&
+        subset=Long({minlon},{maxlon})&
+        subset=Lat({minlat},{maxlat})&
+        subset=unix({datefrom}T00:00:00,{dateto}T23:59:59)&
+        path={path}&
+        row={row}&
+        format=application/tar&
+        CoverageId={coverage}
+        """.format(
+            host=host, 
+            datefrom=datefrom, 
+            dateto=dateto,
+            minlon=minlon,
+            maxlon=maxlon,
+            minlat=minlat,
+            maxlat=maxlat,
+            path=path,
+            row=row,
+            coverage=coverage)
+
+    # query="""
+    #     http://{host}:8080/geoserver/{workspace}/
+    #     wms?service=WMS&
+    #     version=1.1.0&
+    #     request=GetMap&
+    #     layers={layers}&
+    #     styles={styles}&
+    #     bbox={bbox}&
+    #     width={width}&
+    #     height={height}&
+    #     srs={srs}&
+    #     format={format}
+    #     """.format(
+    #     host=host,
+    #     workspace=workspace,
+    #     layers=layers,
+    #     styles=styles,
+    #     bbox=bbox,
+    #     width=width,
+    #     height=height,
+    #     srs=srs,
+    #     format=img_format)
+
+    return query.replace("\n","").replace(" ","") # clean up
