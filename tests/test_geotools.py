@@ -4,8 +4,10 @@ if parentPath not in sys.path:
     sys.path.insert(0, parentPath)
 
 import geotools
+import sqltools
 import unittest
 import utm
+import shapely.wkt
 
 class TestGeotools(unittest.TestCase):
 
@@ -24,6 +26,75 @@ class TestGeotools(unittest.TestCase):
         self.assertTrue(wkt==wkt_ref)
         self.assertTrue(zone==33)
         self.assertTrue(row=='T')
+
+    def test_build_wcs_url_landsat(self):
+        host='localhost'
+        datefrom='2018-01-01'
+        dateto='2018-05-01'
+
+        #geom = geotools.load_geojson("tests/data/tile.geojson")
+
+        #bbox = geotools.wkt_to_bbox(geom.wkt)
+
+        minlon=14.045844
+        maxlon=14.6725
+        minlat=41.278347
+        maxlat=41.677577
+        bbox = (minlat, minlon, maxlat, maxlon)
+
+        coverage="LC8_B1"
+        row=31
+        path=189
+
+        url = geotools.build_wcs_url_landsat(
+            host=host,
+            datefrom=datefrom,
+            dateto=dateto,
+            bbox=bbox,
+            row=row,
+            path=path,
+            coverage=coverage)
+
+        url_ref="http://localhost/wcs?service=WCS&Request=GetCoverage&version=2.0.0&subset=Long(14.045844,14.6725)&subset=Lat(41.278347,41.677577)&subset=unix(2018-01-01T00:00:00,2018-05-01T23:59:59)&path=189&row=31&format=application/tar&CoverageId=LC8_B1"
+
+        self.assertEqual(url, url_ref)
+
+
+    def test_build_wcs_url_landsat_from_jsonfile(self):
+        host='localhost'
+        datefrom='2018-01-01'
+        dateto='2018-05-01'
+        path=189
+        row=31
+        CoverageID="LC8_B1"
+
+        geom = geotools.load_geojson("tests/data/tile.geojson")
+
+        minlon, minlat, maxlon, maxlat = shapely.wkt.loads(geom.wkt).bounds
+
+        lat = (maxlat+minlat)/2.
+        lon = (maxlon+minlon)/2.
+
+
+        bbox = minlat, minlon, maxlat, maxlon
+
+        row,path = sqltools.query_landsat_row_path(lat,lon)
+
+        coverage="LC8_B1"
+        
+        url = geotools.build_wcs_url_landsat(
+            host=host,
+            datefrom=datefrom,
+            dateto=dateto,
+            bbox=bbox,
+            row=row,
+            path=path,
+            coverage=coverage)
+
+        print()
+        # url_ref="http://localhost/wcs?service=WCS&Request=GetCoverage&version=2.0.0&subset=Long(14.045844,14.6725)&subset=Lat(41.278347,41.677577)&subset=unix(2018-01-01T00:00:00,2018-05-01T23:59:59)&path=189&row=31&format=application/tar&CoverageId=LC8_B1"
+
+        # self.assertEqual(url, url_ref)
 
     def test_rectangular_buffer(self):
 
@@ -107,6 +178,12 @@ class TestGeotools(unittest.TestCase):
 
         self.assertTrue(epsg==ref_epsg)
 
+    def test_load_geojson(self):
+        geom = geotools.load_geojson("tests/data/tile.geojson")
+
+        wkt_ref='POLYGON ((9.482452043886109 49.85463343881894, 9.482473535305088 49.85679198904913, 9.48581232614336 49.85677804579602, 9.485790686014679 49.85461949662469, 9.482452043886109 49.85463343881894))'
+
+        self.assertEqual(geom.wkt, wkt_ref)
 
     def test_bounds_bounds_to_utm(self):
         

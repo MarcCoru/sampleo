@@ -35,7 +35,7 @@ workspace="mula18"
 height=240
 width=240
 styles=""
-format="image/geotiff"
+img_format="image/geotiff"
 
 args = parser.parse_args()
 
@@ -46,12 +46,7 @@ if not os.path.exists(args.outfolder):
 # query random tile geometry
 #wkt, zone, row, name = get_tile(args.sql, tilesize=240, decimal=-2, conn=None)
 
-with open(args.geojson) as f:
-    gj = geojson.load(f)
-pt_list = gj['features'][0]["geometry"]["coordinates"][0]
-
-# convert point list (wgs) to shapely geometry object
-geom = shapely.geometry.Polygon(pt_list)
+geom = geotools.load_geojson(args.geojson)
 
 # read basename name from geojson file
 name = os.path.basename(args.geojson).replace(".geojson","")
@@ -63,16 +58,18 @@ geom, zone, row = geotools.wgs2utm(geom)
 host, user, password = geotools.get_wms_credentials()
 
 request = geotools.build_wms_url(
-        geom.wkt,
-        zone,
-        row,
-        host,
-        layers,
-        workspace,
-        height,
-        width,
-        styles,
-        format)
+        wkt=geom.wkt,
+        zone=zone,
+        row=row,
+        host=host,
+        layers=layers,
+        workspace=workspace,
+        height=height,
+        width=width,
+        user=user,
+        password=password,
+        styles=styles,
+        img_format=img_format)
 
 outpath=os.path.join(args.outfolder,name+".tif")
 
