@@ -1,37 +1,38 @@
 #!/bin/bash
 
 # init google project connection
-bash google_init.sh /auth/google-service-account-key.json
+#bash google_init.sh /auth/google-service-account-key.json
 
 # data store
-bucket=gs://sampleo/test
 
-sql="from grid where train=true"
+# psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid where origin='bavaria'" > bavaria.ids
 
-# this script combines get_tile, get_label and get_raster
-# to query data from all sources
+bavariaids=$(psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid where origin='bavaria'")
 
-# query tile and retrieve geojson path
-geojson=`python get_tile.py --sql "$sql"`
-echo $geojson
 
-#echo "copy $geojson to $bucket"
-gsutil cp $geojson $bucket
+# earthengine task list | grep RUNNING | wc -l
 
-# take geojson and query label from wms server
-labeltif=$(python get_label.py $geojson)
+# later iterate
+for id in $bavariaids; do
 
-#echo "copy $labeltif to $bucket"
-gsutil cp $labeltif $bucket
+# check number of running tasks
+num_running=$(earthengine task list | grep RUNNING | wc -l)
+echo $num_running
+if (( $num_running > 2 )); then
+    echo wait
+fi
 
-# take geojson and query raster from google earth engine
-# tbd
+already_downloaded_ids=$(gsutil ls gs://sampleo/tiles | grep -o [0-9]*)
 
-# merge everything to one tfrecord
-# tbd
+python get_geojson.py "from geegrid where id=$id" data/$id.geojson
 
-# push to google storage
-# tbd
+python get_srdata.py --geojson data/$id.geojson -ts 2016-01-01 -te 2016-12-31 --collection "COPERNICUS/S2" -b 'sampleo' -f tiles/$id -r 10
+python get_srdata.py --geojson data/$id.geojson -ts 2016-01-01 -te 2016-12-31 --collection "COPERNICUS/S2" -b 'sampleo' -f tiles/$id -r 20
+python get_srdata.py --geojson data/$id.geojson -ts 2016-01-01 -te 2016-12-31 --collection "COPERNICUS/S2" -b 'sampleo' -f tiles/$id -r 60
 
-# cleanup
-# tbd
+#python get_srdatapy.py 'data/$id.geojson' -ts 2016-01-01 -te 2016-12-31 --collection "LANDSAT/LC08/C01/T1" -f gs://sampleo/tiles/$id/LSraster30m.tfrecord -r 30
+
+python get_label.py data/$id.geojson
+gsutil mv data/$id.tif gs://sampleo/tiles/$id/label.tif
+
+done
