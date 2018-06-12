@@ -7,7 +7,7 @@ bash google_init.sh /auth/google-service-account-key.json
 
 # psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid where origin='bavaria'" > bavaria.ids
 
-bavariaids=$(psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid6k where origin='bavaria' order by random()")
+bavariaids=$(psql -tA -h $PG_HOST -U $PG_USER -p $PG_PORT -d $PG_DATABASE -c "select id from geegrid6k where origin='bavaria' order by random()")
 
 
 # earthengine task list | grep RUNNING | wc -l
@@ -45,7 +45,7 @@ for id in $bavariaids; do
             --startdate 2016-01-01 \
             --enddate 2017-12-31 \
             --collection "COPERNICUS/S2" \
-            --scale $scale > /dev/null &
+            --scale $scale > /dev/null
     done
 
     for scale in 30 100; do
@@ -56,10 +56,10 @@ for id in $bavariaids; do
             --startdate 2016-01-01 \
             --enddate 2017-12-31 \
             --collection "LANDSAT/LC08/C01/T1_SR" \
-            --scale $scale > /dev/null &
+            --scale $scale > /dev/null
     done
     
-    wait
+    # wait
 
     python get_label.py data/$id.geojson
     gsutil mv data/$id.tif gs://sampleo/tif/$id/label.tif

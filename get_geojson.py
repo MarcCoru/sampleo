@@ -34,6 +34,11 @@ def query_tile(sql, outpath):
     feat = geojson.Feature(geometry=geom)
     collection=geojson.FeatureCollection([feat])
 
+    outdir=os.path.dirname(outpath)
+
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
     # write geojson file
     with open(outpath, 'w') as outfile:
         geojson.dump(collection, outfile)
