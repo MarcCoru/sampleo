@@ -7,6 +7,6 @@ requests
 geojson
 earthengine-api
 oauth2client
-tensorflow
+tensorflow==1.5
 Pillow
 numpy
