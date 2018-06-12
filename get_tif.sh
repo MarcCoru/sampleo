@@ -45,7 +45,7 @@ for id in $bavariaids; do
             --startdate 2016-01-01 \
             --enddate 2017-12-31 \
             --collection "COPERNICUS/S2" \
-            --scale $scale > /dev/null
+            --scale $scale > /dev/null &
     done
 
     for scale in 30 100; do
@@ -56,10 +56,10 @@ for id in $bavariaids; do
             --startdate 2016-01-01 \
             --enddate 2017-12-31 \
             --collection "LANDSAT/LC08/C01/T1_SR" \
-            --scale $scale > /dev/null
+            --scale $scale > /dev/null &
     done
     
-    # wait
+    wait
 
     python get_label.py data/$id.geojson
     gsutil mv data/$id.tif gs://sampleo/tif/$id/label.tif
