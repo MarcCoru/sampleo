@@ -218,7 +218,7 @@ def load_geojson(geojson_file):
     # convert point list (wgs) to shapely geometry object
     return shapely.geometry.Polygon(pt_list)
 
-def build_wcs_url_landsat(host,datefrom,dateto, bbox, row, path, coverage):
+def build_wcs_url_landsat(base,datefrom,dateto, bbox, row, path, coverage):
 
     #utm_wkt, zone, row = latlonwkt_to_utmwkt(wkt)
     # bbox = wkt_to_bbox(wkt)
@@ -228,10 +228,7 @@ def build_wcs_url_landsat(host,datefrom,dateto, bbox, row, path, coverage):
 
 
     query="""
-        http://{host}/wcs?
-        service=WCS&
-        Request=GetCoverage&
-        version=2.0.0&
+        {base}&
         subset=Long({minlon},{maxlon})&
         subset=Lat({minlat},{maxlat})&
         subset=unix({datefrom}T00:00:00,{dateto}T23:59:59)&
@@ -240,7 +237,7 @@ def build_wcs_url_landsat(host,datefrom,dateto, bbox, row, path, coverage):
         format=application/tar&
         CoverageId={coverage}
         """.format(
-            host=host, 
+            base=base, 
             datefrom=datefrom, 
             dateto=dateto,
             minlon=minlon,

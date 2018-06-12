@@ -9,11 +9,22 @@ And `WMS_HOST`, `WMS_USER` and `WMS_PASS` to be set for the WMS label query.
 Connection to the Google Project requires `GOOGLE_PROJECT_ID` to be set and `auth/google-service-account-key.json` to be generated and located in `auth`
 These environment variables can be passed via `--env-file credentials.env` to the docker image.
 
-## Docker
+## First Steps
 
-build
+clone repository
+```
+git clone https://gitlab.com/MarcCoru/sampleo.git
+```
+
+build docker image
 ```
 bash build_docker.sh
+```
+
+authenticate earthengine
+```
+docker run -ti -v $HOME/.config/earthengine:/root/.config/earthengine sampleo
+root@c98349e14a4d:/sampleo# earthengine authenticate
 ```
 
 main script:

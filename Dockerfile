@@ -7,7 +7,7 @@ LABEL maintainer="Marc Rußwurm <marc.russwurm@tum.de>"
 
 # update and install packages
 RUN apt-get update \
-  && apt-get install -y python3-pip python3-dev curl \
+  && apt-get install -y python3-pip python3-dev curl postgresql-client \
   && cd /usr/local/bin \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
