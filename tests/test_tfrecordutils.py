@@ -12,10 +12,10 @@ import tfrecordutils
 
 class TestTfrecordutils(unittest.TestCase):
 
-    def test_read_tfrecord_srdata(self):
-        filename="tmp/7777/COPERNICUSS2_60m_ee_export.tfrecord.gz"
+    # def test_read_tfrecord_srdata(self):
+    #     filename="tmp/7777/COPERNICUSS2_60m_ee_export.tfrecord.gz"
 
-        tfrecordutils.read_tfrecord_srdata(filename)
+    #     tfrecordutils.read_tfrecord_srdata(filename)
 
     # def test_load_dataset(self):
     #     filename="tmp/7777/COPERNICUSS2_60m_ee_export.tfrecord.gz"
