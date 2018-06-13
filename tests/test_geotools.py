@@ -30,7 +30,7 @@ class TestGeotools(unittest.TestCase):
     # def test_build_wcs_url_landsat(self):
     #     host='localhost'
     #     datefrom='2018-01-01'
-    #     dateto='2018-05-01'
+n    #     dateto='2018-05-01'
 
     #     #geom = geotools.load_geojson("tests/data/tile.geojson")
 

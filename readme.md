@@ -121,3 +121,9 @@ check google connectivity
 ```
 docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash google_init.sh /auth/google-service-account-key.json
 ```
+
+## Notes
+
+```
+docker run -v $HOME/.config/earthengine:/root/.config/earthengine -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash get_tif.sh
+```
