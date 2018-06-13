@@ -5,9 +5,7 @@
 
 # data store
 
-# psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid where origin='bavaria'" > bavaria.ids
-
-bavariaids=$(psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid where origin='bavaria' order by random()")
+bavariaids=$(psql -tA -h $PG_HOST -U $PG_USER -p $PG_PORT -d $PG_DATABASE -c "select id from geegrid where origin='bavaria' order by random()")
 
 
 # earthengine task list | grep RUNNING | wc -l
