@@ -11,6 +11,13 @@ These environment variables can be passed via `--env-file credentials.env` to th
 
 ## First Steps
 
+## Query munich
+
+make sure that auth/google-service-account-key.geojson is present
+```
+docker run -v $HOME/.config/earthengine:/root/.config/earthengine -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash get_munich.sh
+```
+
 clone repository
 ```
 git clone https://gitlab.com/MarcCoru/sampleo.git

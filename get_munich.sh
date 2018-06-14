@@ -7,7 +7,7 @@ bash google_init.sh /auth/google-service-account-key.json
 
 # psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from geegrid where origin='bavaria'" > bavaria.ids
 
-bavariaids=$(psql -tA -h knecht -U mulapostgres -p 25432 -d geo -c "select id from munich.tiles")
+bavariaids=$(psql -tA -h $PG_HOST -U $PG_USER -p $PG_PORT -d $PG_DATABASE -c "select id from munich.tiles order by id desc")
 
 
 # earthengine task list | grep RUNNING | wc -l
@@ -24,6 +24,16 @@ for id in $bavariaids; do
         sleep 5
         num_running=$(earthengine task list | grep -E "RUNNING|READY" | wc -l)
     done
+
+
+    # skip if folder already exists:
+    if [ $(gsutil ls gs://sampleo/munich | grep munich/$id/) ];
+    then
+        echo "skipping $id. tile already in gs://sampleo/munich" 
+        continue
+    fi
+
+    exit 0
 
     python get_geojson.py "from munich.tiles where id=$id" data/$id.geojson
     gsutil cp data/$id.geojson gs://sampleo/munich/$id/

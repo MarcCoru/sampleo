@@ -24,7 +24,7 @@ for id in $bavariaids; do
 
     # dummy check number of running tasks
     max_num_tasks=50
-    num_running=$(earthengine task list | grep RUNNING | wc -l)
+    num_running=$(earthengine task list | grep -E "RUNNING|READY" | wc -l)
     while [ "$num_running" -gt "$max_num_tasks" ]
     do
         echo "waiting for $num_running GEE tasks to finish..."
