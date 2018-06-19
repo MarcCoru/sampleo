@@ -48,7 +48,7 @@ The rectangle is located randomly within the geometry defined by `--sql`
 python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
 ```
 
-<src width=75% img=doc/tiles.gif>
+<img width=75% src=doc/tiles.gif>
 
 
 ## Query munich
