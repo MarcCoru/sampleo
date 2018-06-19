@@ -5,11 +5,51 @@ A dockerized module to sample raster-label pairs for Earth Observation data
 <img src="doc/node_diagram.png">
 
 **important**: these scripts require the environment variables `PG_HOST`, `PG_PORT`,`PG_USER`, `PG_DATABASE`, `PG_PASS` to be set for the PostgreSQL/Postgis connection.
-And `WMS_HOST`, `WMS_USER` and `WMS_PASS` to be set for the WMS label query.
-Connection to the Google Project requires `GOOGLE_PROJECT_ID` to be set and `auth/google-service-account-key.json` to be generated and located in `auth`
-These environment variables can be passed via `--env-file credentials.env` to the docker image.
+These environment variables can be passed via `--env-file auth/environment.env` to the docker image.
 
-## First Steps
+
+## Start local PostgreSQL/PostGIS and Geoserver
+
+Necessary environment variables stored in `auth/environment.env`:
+```
+export PG_PORT=25432
+export PG_PASS=changeme
+export PG_DATABASE=geo
+export PG_USER=postgres
+export PG_HOST=localhost
+```
+
+pull and launch PostgreSQL/PostGIS local server and Geoserver from [kartoza docker images](https://github.com/kartoza/docker-postgis)
+```
+bash deploy.sh
+```
+
+show running docker images
+```
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
+0263019c9191        kartoza/geoserver   "catalina.sh run"        7 seconds ago       Up 6 seconds        0.0.0.0:8080->8080/tcp    geoserver
+013972c26315        kartoza/postgis     "/bin/sh -c /docker-…"   46 seconds ago      Up 45 seconds       0.0.0.0:25432->5432/tcp   postgis
+```
+
+insert a demo AOI into the new table `demoaoi`
+```
+psql -d $PG_DATABASE -U $PG_USER -p $PG_PORT -h $PG_HOST -f data/create_demoaoi_table_and_insert_rectangle.sql
+```
+
+single feature in `demoaoi` table inserted by the sql above
+
+<img width=75% src=doc/demoaoi.png>
+
+## Get Tile
+create a `geojson` in `--outfolder` that describes a rectangle of size `--tilesize` in meter.
+The rectangle is located randomly within the geometry defined by `--sql`
+```
+python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
+```
+
+<src width=75% img=doc/tiles.gif>
+
 
 ## Query munich
 
@@ -120,7 +160,7 @@ python tif2tfrecord.py <tiffolder> <target>.tfrecord
 ```
 
 raster images are organized in `<tiffolder>/x/*.tif` and label image(s) in `<tiffolder>/y/*.tif`.
-the output `<target>` will be `gzipped` if it ends with `.gz` 
+the output `<target>` will be `gzipped` if it ends with `.gz`
 
 ## Quicktests
 
