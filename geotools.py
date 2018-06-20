@@ -13,7 +13,7 @@ def read_postgres_credentials():
     port=os.environ["PG_PORT"]
     user=os.environ["PG_USER"]
     database=os.environ["PG_DATABASE"]
-    password = os.environ["PG_PASS"]
+    password = os.environ["PGPASSWORD"]
 
     return host, port, user, database, password
 

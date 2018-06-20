@@ -8,16 +8,8 @@ import geojson
 import sys
 import shapely.geometry
 
-"""
-queries a postgres database for a random tile within an area of interest (aoi)
-and returns a representation
-"""
-
 description="""
-queries a postgres database for a random tile within an area of interest (aoi).
-The aoi table can be defined by --sql
-The database connection requires following environment variables:
-'PG_HOST', 'PG_USER', 'PG_PASS', 'PG_DATABASE' and 'PG_PORT')
+queries a geoserver WMS to rasterize a preconfigured WMS layer over a geojson defined geometry
 """
 
 parser = argparse.ArgumentParser(description=description)
@@ -28,16 +20,23 @@ parser.add_argument('geojson', type=str,
 parser.add_argument('--outfolder', type=str,
                     default="data",
                     help="folder to store tif images")
-parser.add_argument('-l','--layers',type=str, default="mula18:fields", help="WMS layer")
+parser.add_argument('-l','--layers',type=str, default="demo:osm_buildings", help="WMS layer")
+parser.add_argument('--workspace',type=str, default="demo", help="WMS workspace")
+parser.add_argument('-W','--width',type=int, default=240, help="width in pixel")
+parser.add_argument('-H','--height',type=int, default=240, help="height in pixel")
+parser.add_argument('-s','--style',type=str, default="", help="WMS style")
+parser.add_argument('-f','--format',type=str, default="image/geotiff", help="WMS format")
 
-layers="mula18:fields"
-workspace="mula18"
-height=240
-width=240
-styles=""
-img_format="image/geotiff"
+parser.add_argument('-d','--debug',action="store_true", help="debug option: print the wms request")
 
 args = parser.parse_args()
+
+layers=args.layers
+workspace=args.workspace
+height=args.width
+width=args.height
+styles=args.style
+img_format=args.format
 
 # create dir to store data if needed
 if not os.path.exists(args.outfolder):
@@ -71,14 +70,21 @@ request = geotools.build_wms_url(
         styles=styles,
         img_format=img_format)
 
+if args.debug:
+    print(request)
+
 outpath=os.path.join(args.outfolder,name+".tif")
 
 # send wms request, authenticate and write tif
 with open(outpath, 'wb') as f:
 
-    ret = requests.get(request,
-                       stream=True,
-                       auth=requests.auth.HTTPBasicAuth(user, password))
+    if user and password: # if WMS_USER and WMS_PASS is defined
+        ret = requests.get(request,
+                           stream=True,
+                           auth=requests.auth.HTTPBasicAuth(user, password))
+    else:
+        ret = requests.get(request,
+                           stream=True)
 
     for data in ret.iter_content(1024):
         f.write(data)

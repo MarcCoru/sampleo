@@ -21,13 +21,6 @@ docker run -d	\
 	--name postgis \
 	-t kartoza/postgis
 
-# load required function for get_tile.py
-psql -d $PG_DATABASE \
- 	-U $PG_USER \
-	-p $PG_PORT \
-	-h $PG_HOST \
-	-f $DIR/sql/randompointsinpolygon.sql
-
 mkdir -p data/geoserver
 
 # Start Geoserver in Docker
@@ -39,5 +32,5 @@ docker run --name "geoserver" \
 	-v $DIR/data/geoserver:/opt/geoserver/data_dir \
 	-d \
 	-e USERNAME=admin \
-	-e PASS=adminpassword \
+	-e PASS=changeme \
 	-t kartoza/geoserver

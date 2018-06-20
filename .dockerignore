@@ -1,5 +1,7 @@
 auth
 tmp
+data/postgresql
+data/geoserver
 credentials.env
 .ipynb_checkpoints
 __pycache__

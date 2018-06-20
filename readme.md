@@ -44,12 +44,52 @@ single feature in `demoaoi` table inserted by the sql above
 ## Get Tile
 create a `geojson` in `--outfolder` that describes a rectangle of size `--tilesize` in meter.
 The rectangle is located randomly within the geometry defined by `--sql`
+
+dependency: install the `randompointsinpolygon` SQL function on the PostGIS server
+```
+psql -d $PG_DATABASE \
+ 	-U $PG_USER \
+	-p $PG_PORT \
+	-h $PG_HOST \
+	-f sql/randompointsinpolygon.sql
+```
+
 ```
 python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
 ```
 
 <img width=75% src=doc/tiles.gif>
 
+## Get Label
+
+geoserver configuration at `http://localhost:8080/geoserver`
+user: `admin`, password: `geoserver`
+
+Demo shapefile located at `data/geoserver/data/osm_buildings.shp`
+and wms configured in `data/geoserver`
+
+<img width=75% src=doc/osmbuildings.png>
+
+```
+http://localhost:8080/geoserver/demo/wms?
+  service=WMS&
+  version=1.1.0&
+  request=GetMap&
+  layers=demo:osm_buildings&
+  styles=&
+  bbox=11.5568477,48.1421757,11.5782697,48.1537377&
+  width=768&
+  height=414&
+  srs=EPSG:4326&
+  format=image/tiff
+```
+
+Query a label from the WMS server defined by a geojson
+```
+  python get_label.py --outfolder data/tiff -l osm_buildings data/demo/tile.geojson
+```
+
+<img width=50% src=doc/label.gif>
 
 ## Query munich
 
