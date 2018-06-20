@@ -107,21 +107,21 @@ def utmzone2epsg(zone, row):
 def bounds_to_utm(minlat,minlon,maxlat,maxlon):
     """
     takes wgs85
-    
+
     determines the appropiate utm zone and row by the center of points min and max
     projects min and max coordinates to utm and ouputs zone and row
     """
-    
+
     centerlat = (minlat+maxlat)/2
     centerlon = (minlon+maxlon)/2
-    
+
     # get center zone and row numbers
     _,_,zone,row = utm.from_latlon(centerlat, centerlon)
-    
+
     # convert min and max
     minx, miny, _, _ = utm.from_latlon(minlat, minlon, force_zone_number=zone)
     maxx, maxy, _, _ = utm.from_latlon(maxlat, maxlon, force_zone_number=zone)
-        
+
     return minx, miny, maxx, maxy, zone, row
 
 def utm2wgs(geom, zone, row):
@@ -237,8 +237,8 @@ def build_wcs_url_landsat(base,datefrom,dateto, bbox, row, path, coverage):
         format=application/tar&
         CoverageId={coverage}
         """.format(
-            base=base, 
-            datefrom=datefrom, 
+            base=base,
+            datefrom=datefrom,
             dateto=dateto,
             minlon=minlon,
             maxlon=maxlon,

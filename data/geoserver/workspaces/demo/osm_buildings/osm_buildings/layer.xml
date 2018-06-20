@@ -1,0 +1,15 @@
+<layer>
+  <name>osm_buildings</name>
+  <id>LayerInfoImpl-380f55b9:1641c681bb9:-7ff8</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl-439b8758:1641890f3af:-7ffe</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-380f55b9:1641c681bb9:-7ff9</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+</layer>

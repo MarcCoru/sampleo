@@ -11,6 +11,11 @@ credentials.env
 *.ipynb
 auth
 
+*.log
+*.synctex.gz
+*.aux
+*.pdf
+
 # Created by https://www.gitignore.io/api/python,jupyternotebook
 
 ### JupyterNotebook ###

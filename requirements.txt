@@ -6,8 +6,5 @@ argparse
 requests
 geojson
 geetools
-earthengine-api
-oauth2client
-tensorflow==1.5
 Pillow
 numpy

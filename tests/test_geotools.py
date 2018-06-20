@@ -27,76 +27,6 @@ class TestGeotools(unittest.TestCase):
         self.assertTrue(zone==33)
         self.assertTrue(row=='T')
 
-    # def test_build_wcs_url_landsat(self):
-    #     host='localhost'
-    #     datefrom='2018-01-01'
-n    #     dateto='2018-05-01'
-
-    #     #geom = geotools.load_geojson("tests/data/tile.geojson")
-
-    #     #bbox = geotools.wkt_to_bbox(geom.wkt)
-
-    #     minlon=14.045844
-    #     maxlon=14.6725
-    #     minlat=41.278347
-    #     maxlat=41.677577
-    #     bbox = (minlat, minlon, maxlat, maxlon)
-
-    #     coverage="LC8_B1"
-    #     row=31
-    #     path=189
-
-    #     url = geotools.build_wcs_url_landsat(
-    #         host=host,
-    #         datefrom=datefrom,
-    #         dateto=dateto,
-    #         bbox=bbox,
-    #         row=row,
-    #         path=path,
-    #         coverage=coverage)
-
-    #     url_ref="http://localhost/wcs?service=WCS&Request=GetCoverage&version=2.0.0&subset=Long(14.045844,14.6725)&subset=Lat(41.278347,41.677577)&subset=unix(2018-01-01T00:00:00,2018-05-01T23:59:59)&path=189&row=31&format=application/tar&CoverageId=LC8_B1"
-
-    #     self.assertEqual(url, url_ref)
-
-
-    # def test_build_wcs_url_landsat_from_jsonfile(self):
-    #     #host='localhost'
-    #     base="http://eodataservice.org/landsat/wcs?service=WCS&version=2.0.0"
-    #     datefrom='2018-01-01'
-    #     dateto='2018-05-01'
-    #     path=189
-    #     row=31
-    #     CoverageID="LC8_B1"
-
-    #     geom = geotools.load_geojson("tests/data/tile.geojson")
-
-    #     minlon, minlat, maxlon, maxlat = shapely.wkt.loads(geom.wkt).bounds
-
-    #     lat = (maxlat+minlat)/2.
-    #     lon = (maxlon+minlon)/2.
-
-
-    #     bbox = minlat, minlon, maxlat, maxlon
-
-    #     row,path = sqltools.query_landsat_row_path(lat,lon)
-
-    #     coverage="LC8_B1"
-        
-    #     url = geotools.build_wcs_url_landsat(
-    #         base=base,
-    #         datefrom=datefrom,
-    #         dateto=dateto,
-    #         bbox=bbox,
-    #         row=row,
-    #         path=path,
-    #         coverage=coverage)
-
-    #     print()
-    #     url_ref="http://localhost/wcs?service=WCS&Request=GetCoverage&version=2.0.0&subset=Long(14.045844,14.6725)&subset=Lat(41.278347,41.677577)&subset=unix(2018-01-01T00:00:00,2018-05-01T23:59:59)&path=189&row=31&format=application/tar&CoverageId=LC8_B1"
-
-    #     self.assertEqual(url, url_ref)
-
     def test_rectangular_buffer(self):
 
         minx, maxx, miny, maxy = geotools.rectangular_buffer(0,0, 1)
@@ -106,14 +36,14 @@ n    #     dateto='2018-05-01'
         self.assertTrue(maxx==1)
         self.assertTrue(maxy==1)
 
-    def test_query_random_point(self):
-
-        sql = "from aois where layer='bavaria' and partition='train'"
-
-        try:
-            geotools.query_random_point("from aois where layer='bavaria' and partition='train'")
-        except:
-            self.fail("could not query random point with sql: {}".format(sql))
+    # def test_query_random_point(self):
+    #
+    #     sql = "from aois where layer='bavaria' and partition='train'"
+    #
+    #     try:
+    #         geotools.query_random_point("from aois where layer='bavaria' and partition='train'")
+    #     except:
+    #         self.fail("could not query random point with sql: {}".format(sql))
 
     def test_get_wms_credentials(self):
 
@@ -187,7 +117,7 @@ n    #     dateto='2018-05-01'
         self.assertEqual(geom.wkt, wkt_ref)
 
     def test_bounds_bounds_to_utm(self):
-        
+
         minlon=8.936117736731113
         maxlon=13.928324974888927
         minlat=47.240412610307
@@ -203,7 +133,7 @@ n    #     dateto='2018-05-01'
         self.assertEqual(maxy, 5612859.060998418)
         self.assertEqual(zone, 32)
         self.assertEqual(row, 'U')
-        
+
 
     def test_wkt_to_bbox(self):
         wkt = 'POLYGON ((366739.9790677647 5448209.999917955, 366739.9790695914 5448449.999918112, 366979.9791826151 5448449.999919109, 366979.9791807987 5448209.99991895, 366739.9790677647 5448209.999917955))'

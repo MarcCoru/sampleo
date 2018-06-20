@@ -1,1 +1,0 @@
-select name, counname) as parcels from data group by name order by parcels desc

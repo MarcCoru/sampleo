@@ -1,35 +1,47 @@
 # Sampleo
 
-A dockerized module to sample raster-label pairs for Earth Observation data
+An open, modifyable and dockerized module to sample raster-label pairs for Earth Observation data.
 
-<img src="doc/node_diagram.png">
+<img src="doc/docker_nodes.png">
 
-**important**: these scripts require the environment variables `PG_HOST`, `PG_PORT`,`PG_USER`, `PG_DATABASE`, `PG_PASS` to be set for the PostgreSQL/Postgis connection.
-These environment variables can be passed via `--env-file auth/environment.env` to the docker image.
+This repository builds a `sampleo` docker container that executes queries to
+a PostgreSQL/PostGIS server and Geoserver to sample rectangular tiles (`get_tile.py`) and
+label raster images (`get_label.py`) from a defined region.
 
+## Minimal Working Example
 
-## Start local PostgreSQL/PostGIS and Geoserver
+### Environment Variables for Configuration
 
 Necessary environment variables stored in `auth/environment.env`:
 ```
 export PG_PORT=25432
-export PG_PASS=changeme
+export PGPASSWORD=changeme
 export PG_DATABASE=geo
 export PG_USER=postgres
 export PG_HOST=localhost
+
+export WMS_HOST=localhost
+export WMS_USER=""
+export WMS_PASSWORD=""
 ```
+
+### Create a PostGIS and Geoserver from `kartoza` docker images
+
 
 pull and launch PostgreSQL/PostGIS local server and Geoserver from [kartoza docker images](https://github.com/kartoza/docker-postgis)
 ```
 bash deploy.sh
 ```
 
-show running docker images
+#### PostgreSQL/PostGIS
+
+Install the `randompointsinpolygon` SQL function on the PostGIS server
 ```
-$ docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
-0263019c9191        kartoza/geoserver   "catalina.sh run"        7 seconds ago       Up 6 seconds        0.0.0.0:8080->8080/tcp    geoserver
-013972c26315        kartoza/postgis     "/bin/sh -c /docker-…"   46 seconds ago      Up 45 seconds       0.0.0.0:25432->5432/tcp   postgis
+psql -d $PG_DATABASE \
+ 	-U $PG_USER \
+	-p $PG_PORT \
+	-h $PG_HOST \
+	-f sql/randompointsinpolygon.sql
 ```
 
 insert a demo AOI into the new table `demoaoi`
@@ -41,18 +53,23 @@ single feature in `demoaoi` table inserted by the sql above
 
 <img width=75% src=doc/demoaoi.png>
 
-## Get Tile
-create a `geojson` in `--outfolder` that describes a rectangle of size `--tilesize` in meter.
-The rectangle is located randomly within the geometry defined by `--sql`
+#### Geoserver
 
-dependency: install the `randompointsinpolygon` SQL function on the PostGIS server
-```
-psql -d $PG_DATABASE \
- 	-U $PG_USER \
-	-p $PG_PORT \
-	-h $PG_HOST \
-	-f sql/randompointsinpolygon.sql
-```
+geoserver configuration at `http://localhost:8080/geoserver`
+user: `admin`, password: `geoserver`
+
+Demo shapefile located at `data/geoserver/data/osm_buildings.shp`
+and wms configured in `data/geoserver`
+
+Demo shape dataset:
+
+<img width=75% src=doc/osmbuildings.png>
+
+
+## Get Tile
+Randomly samples a rectangular tile defined by the `--sql` statement.
+Stores it as `geojson` in `--outfolder`.
+The size can be defined by `--tilesize` in meter.
 
 ```
 python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
@@ -62,155 +79,21 @@ python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
 
 ## Get Label
 
-geoserver configuration at `http://localhost:8080/geoserver`
-user: `admin`, password: `geoserver`
-
-Demo shapefile located at `data/geoserver/data/osm_buildings.shp`
-and wms configured in `data/geoserver`
-
-<img width=75% src=doc/osmbuildings.png>
-
-```
-http://localhost:8080/geoserver/demo/wms?
-  service=WMS&
-  version=1.1.0&
-  request=GetMap&
-  layers=demo:osm_buildings&
-  styles=&
-  bbox=11.5568477,48.1421757,11.5782697,48.1537377&
-  width=768&
-  height=414&
-  srs=EPSG:4326&
-  format=image/tiff
-```
+Reads the `tile.geojson` file and queries the WMS server for a raster image.
+The WMS configuration is preconfigured in data/geoserver for this demo.
 
 Query a label from the WMS server defined by a geojson
 ```
-  python get_label.py --outfolder data/tiff -l osm_buildings data/demo/tile.geojson
+  python get_label.py --outfolder data/tiff --layer osm_buildings data/demo/tile.geojson
 ```
 
 <img width=50% src=doc/label.gif>
 
-## Query munich
+## Get Raster (not implemented yet)
 
-make sure that auth/google-service-account-key.geojson is present
-```
-docker run -v $HOME/.config/earthengine:/root/.config/earthengine -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash get_munich.sh
-```
+Reads the `tile.geojson` and queries a `WCS` service to retrieve raster data.
 
-clone repository
-```
-git clone https://gitlab.com/MarcCoru/sampleo.git
-```
+## Authors
 
-build docker image
-```
-bash build_docker.sh
-```
-
-authenticate earthengine
-```
-docker run -ti -v $HOME/.config/earthengine:/root/.config/earthengine sampleo
-root@c98349e14a4d:/sampleo# earthengine authenticate
-```
-
-main script:
-```
-docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo \
-  bash get.sh
-```
-
-run tests from the docker image
-```
-docker run --env-file credentials.env sampleo \
-  bash selftest.sh
-```
-## Structure
-
-the main script `get.sh` calls python scripts
-  1. to generate a tile-geojson (`get_tile.py`)
-  2. to query labels form a `WMS Server` (`get_label.py`)
-  3. (tbd) to query raster data from `Google Earth Engine` (`get_raster.py`)
-  4. (tbd) to load everything on Google Cloud storage
-
-### Get Tile
-
-Requires the `RandomPointsInPolygon.sql` SQL function.
-The code is stored in `./sql`.
-It needs to be executed once on the PostGIS server to register the function.
-
-query a tile from the grid cells that are attributed with
-```
-docker run --env-file credentials.env sampleo \
-  python get_tile.py --sql "from grid where origin='bavaria' and train=true"
-```
-
-writes geojson representation to output folder (default `data`).
-naming format: `"E{e}N{n}UTM{zone}{row}"` e.g, `E557000N5569100UTM32U`
-e.g., geojson output: `data/E557000N5569100UTM32U.geojson`
-
-### Get Label
-
-reads a geojson tile representation and queries a `Geotiff` from a defined WMS Server
-
-requires environment variables `WMS_HOST`, `WMS_USER` and `WMS_PASS`
-
-```
-docker run --env-file credentials.env sampleo \
-  python get_label.py `data/E557000N5569100UTM32U.geojson`
-```
-
-## Tools
-
-Functions and scripts meant to be run once for initial setup.
-
-### Create Grid
-
-Builds a SQL query to create a rectangular grid within a `--geometry` at `--table` of given `--height` and `--width`.
-A `--margin` can be specified between the grid cells.
-Each grid cell is attributed by a boolean `eval` at `--eval_ratio` and grid cells that are not `eval` are attributed by a boolean `train` at --train_ratio``
-
-<img width=70% src=doc/grid.png>
-
-
-the `--geometry` table requires `geom::geometry, native_srs::integer, name::test` fields.
-The generated `--table` contains `id::serial`, `origin::test`, `eval::bool`, `train::bool`
-
-Example call (query is written to `query.sql`):
-```bash
-python create_grid.py \
-    --geometry "from regions where name='bavaria'" \
-    --table "dev.testgrid" \
-    --width 3000 \
-    --height 3000 \
-    --margin 500 \
-    --eval_ratio 0.8 \
-    --train_ratio 0.5 > query.sql
-```
-
-`query.sql` can be executed via `psql`
-```bash
-psql -d $PG_DATABASE -U $PG_USER -h $PG_HOST -p $PG_PORT -f query.sql
-```
-
-### Convert Tif to Tfrecord
-
-```
-python tif2tfrecord.py <tiffolder> <target>.tfrecord
-```
-
-raster images are organized in `<tiffolder>/x/*.tif` and label image(s) in `<tiffolder>/y/*.tif`.
-the output `<target>` will be `gzipped` if it ends with `.gz`
-
-## Quicktests
-
-check google connectivity
-```
-docker run -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash google_init.sh /auth/google-service-account-key.json
-```
-
-## Notes
-
-```
-docker run -v $HOME/.config/earthengine:/root/.config/earthengine -v $PWD/auth:/auth --env-file auth/credentials.env sampleo bash get_tif.sh
-```
+Marc Rußwurm, Technical University of Munich, Chair of Remote Sensing Technology
+Alejandro Coca, King's Colledge London,
