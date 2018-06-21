@@ -69,6 +69,12 @@ Demo shape dataset:
 
 <img width=75% src=doc/osmbuildings.png>
 
+## Build Docker Container
+
+Builds a docker container with all necessary dependencies tagged as `sampleo:latest`
+```
+bash build_docker.sh
+```
 
 ## Get Tile
 Randomly samples a rectangular tile defined by the `--sql` statement.
@@ -76,11 +82,22 @@ Stores it as `geojson` in `--outfolder`.
 The size can be defined by `--tilesize` in meter.
 
 ```
-python get_tile.py \
-  --sql "from demoaoi" \
-  --tilesize 240 \
-  --outfolder data/geojson
+docker run --env-file auth/environment.env --net="host" sampleo \
+  python get_tile.py \
+    --sql "from demoaoi" \
+    --tilesize 240 \
+    --outfolder data/geojson
 ```
+
+Explanation:
+The command `docker run --env-file auth/environment.env --net="host" sampleo` runs the script
+`python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
+`
+in the docker container `sampleo`.
+With `--env-file` the required environment variables are available and `--net`
+allows the docker container to address the `localhost` outside the container.
+The script can be also executed outside of the docker container
+(indicated by indentation) if all dependencies are installed on the host.
 
 <img width=75% src=doc/tiles.gif>
 
@@ -91,6 +108,7 @@ The WMS configuration is preconfigured in data/geoserver for this demo.
 
 Query a label from the WMS server defined by a geojson
 ```
+docker run --env-file auth/environment.env --net="host" sampleo \
   python get_label.py \
     --outfolder data/tiff \
     --layer osm_buildings \
