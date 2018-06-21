@@ -46,7 +46,11 @@ psql -d $PG_DATABASE \
 
 insert a demo AOI into the new table `demoaoi`
 ```
-psql -d $PG_DATABASE -U $PG_USER -p $PG_PORT -h $PG_HOST -f data/create_demoaoi_table_and_insert_rectangle.sql
+psql -d $PG_DATABASE \
+  -U $PG_USER \
+  -p $PG_PORT \
+  -h $PG_HOST \
+  -f data/create_demoaoi_table_and_insert_rectangle.sql
 ```
 
 single feature in `demoaoi` table inserted by the sql above
@@ -72,7 +76,10 @@ Stores it as `geojson` in `--outfolder`.
 The size can be defined by `--tilesize` in meter.
 
 ```
-python get_tile.py --sql "from demoaoi" --tilesize 240 --outfolder data/geojson
+python get_tile.py \
+  --sql "from demoaoi" \
+  --tilesize 240 \
+  --outfolder data/geojson
 ```
 
 <img width=75% src=doc/tiles.gif>
@@ -84,7 +91,10 @@ The WMS configuration is preconfigured in data/geoserver for this demo.
 
 Query a label from the WMS server defined by a geojson
 ```
-  python get_label.py --outfolder data/tiff --layer osm_buildings data/demo/tile.geojson
+  python get_label.py \
+    --outfolder data/tiff \
+    --layer osm_buildings \
+    data/demo/tile.geojson
 ```
 
 <img width=50% src=doc/label.gif>
