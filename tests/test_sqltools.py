@@ -5,7 +5,7 @@ if parentPath not in sys.path:
 
 import geotools
 import sqltools
-import create_grid
+from tools import create_grid
 import unittest
 import utm
 
