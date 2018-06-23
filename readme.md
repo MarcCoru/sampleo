@@ -125,4 +125,4 @@ Reads the `tile.geojson` and queries a `WCS` service to retrieve raster data.
 
 [Marc Rußwurm](http://www.lmf.bgu.tum.de/russwurm/), Technical University of Munich, Chair of Remote Sensing Technology
 
-[Alejandro Coca](), King's Colledge London,
+[Alejandro Coca](https://kclpure.kcl.ac.uk/portal/en/persons/alejandro-coca-castro(a6ff3b05-69c6-428e-a15c-713990b76ea6).html), King's College London, Department of Geography, Faculty of Social Science & Public Policy
